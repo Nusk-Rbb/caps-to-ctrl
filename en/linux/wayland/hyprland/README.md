@@ -2,7 +2,7 @@
 
 ## How to set up
 
-1. Add the following line to `$HOME/.config/hypr/hyprland.conf`
+1. Add the following to `$HOME/.config/hypr/hyprland.conf`
 
 ```conf
 input {
