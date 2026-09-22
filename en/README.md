@@ -3,6 +3,8 @@
 How to remap CapsLock to Ctrl on each OS.
 
 - [Windows](#windows)
+  - [Per-user (without administrator rights)](#per-user-without-administrator-rights)
+  - [On a managed or work PC](#on-a-managed-or-work-pc)
 - [macOS](#macos)
 - [Linux (X11)](#linux-x11)
 - [Linux (Wayland)](#linux-wayland)
@@ -13,6 +15,10 @@ How to remap CapsLock to Ctrl on each OS.
 ## Windows
 
 Requires a reboot to take effect.
+
+> **Administrator rights required.** The `HKEY_LOCAL_MACHINE` key below is machine-wide, so
+> applying it needs an administrator account. Without one, try the
+> [per-user alternative](#per-user-without-administrator-rights).
 
 ### Using the registry file
 
@@ -51,6 +57,39 @@ Delete the `Scancode Map` value and restart your PC:
 ```powershell
 reg delete "HKLM\SYSTEM\CurrentControlSet\Control\Keyboard Layout" /v "Scancode Map" /f
 ```
+
+### Per-user (without administrator rights)
+
+The same `Scancode Map` value can be placed under `HKEY_CURRENT_USER`, which applies to your
+account only and does not need administrator rights:
+
+```
+HKEY_CURRENT_USER\Keyboard Layout
+```
+
+```powershell
+reg add "HKCU\Keyboard Layout" /v "Scancode Map" /t REG_BINARY /d 0000000000000000020000001d003a0000000000 /f
+```
+
+> **Note:** Support for the per-user key varies between Windows versions and configurations, so
+> it may not take effect everywhere. The machine-wide `HKLM` key is the reliable one.
+
+### On a managed or work PC
+
+Remapping keys on a company-managed machine may not work, or may not be permitted:
+
+- **Group Policy / Intune** may reapply its own registry state at startup and revert the change
+- **AppLocker / WDAC** may block `.reg` files from running at all
+- **Endpoint protection (EDR)** may flag edits under `Keyboard Layout`, since keyloggers touch
+  nearby keys
+- Your organization's policy may prohibit editing the registry regardless of whether it works
+
+If you cannot use the registry, these alternatives run with ordinary user rights:
+
+- **[PowerToys](https://learn.microsoft.com/windows/powertoys/) Keyboard Manager** — made by
+  Microsoft, does not edit the registry, and is often already approved for corporate use
+- **[AutoHotkey](https://www.autohotkey.com/)** — a one-line script (`CapsLock::Ctrl`), though
+  running unapproved executables may itself be restricted
 
 ---
 

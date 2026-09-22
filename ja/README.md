@@ -3,6 +3,8 @@
 各OSでの CapsLock を Ctrl に割り当てる手順。
 
 - [Windows](#windows)
+  - [ユーザー単位で設定する（管理者権限なし）](#ユーザー単位で設定する管理者権限なし)
+  - [会社の管理PCで使う場合](#会社の管理pcで使う場合)
 - [macOS](#macos)
 - [Linux (X11)](#linux-x11)
 - [Linux (Wayland)](#linux-wayland)
@@ -13,6 +15,9 @@
 ## Windows
 
 反映には再起動が必要。
+
+> **管理者権限が必要。** 以下の `HKEY_LOCAL_MACHINE` はマシン全体の設定なので、適用には管理者
+> アカウントが要る。権限が無い場合は[ユーザー単位の方法](#ユーザー単位で設定する管理者権限なし)を試す。
 
 ### レジストリファイルを使う方法
 
@@ -51,6 +56,39 @@ reg query "HKLM\SYSTEM\CurrentControlSet\Control\Keyboard Layout" /v "Scancode M
 ```powershell
 reg delete "HKLM\SYSTEM\CurrentControlSet\Control\Keyboard Layout" /v "Scancode Map" /f
 ```
+
+### ユーザー単位で設定する（管理者権限なし）
+
+同じ `Scancode Map` の値を `HKEY_CURRENT_USER` 配下に置くこともできる。自分のアカウントにのみ
+適用され、管理者権限は不要。
+
+```
+HKEY_CURRENT_USER\Keyboard Layout
+```
+
+```powershell
+reg add "HKCU\Keyboard Layout" /v "Scancode Map" /t REG_BINARY /d 0000000000000000020000001d003a0000000000 /f
+```
+
+> **注意:** ユーザー単位のキーが効くかは Windows のバージョンや構成によって異なり、環境によっては
+> 反映されない。確実なのはマシン全体の `HKLM` のほう。
+
+### 会社の管理PCで使う場合
+
+組織管理下のPCでは、設定が効かない・そもそも許可されていないことがある。
+
+- **グループポリシー / Intune** が起動時にレジストリを上書きして、設定が戻ることがある
+- **AppLocker / WDAC** によって `.reg` の実行自体がブロックされていることがある
+- **エンドポイント保護 (EDR)** が `Keyboard Layout` 配下の変更を検知することがある。キーロガーが
+  触る領域と近いため
+- 技術的に通るかどうかとは別に、社内規程でレジストリ編集が禁止されている場合がある
+
+レジストリが使えない場合、以下は通常のユーザー権限で動く。
+
+- **[PowerToys](https://learn.microsoft.com/ja-jp/windows/powertoys/) Keyboard Manager** —
+  Microsoft 製。レジストリを直接編集せず、法人環境でも承認済みであることが多い
+- **[AutoHotkey](https://www.autohotkey.com/)** — `CapsLock::Ctrl` の1行で済む。ただし未承認の
+  実行ファイルの持ち込み自体が制限されている場合がある
 
 ---
 
